@@ -1,9 +1,8 @@
 using AppHost;
 using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
 namespace TodoFuncEndpointTests;
 
-public class IntegrationTest1(ITestOutputHelper outputHelper)
+public class IntegrationTest1
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
