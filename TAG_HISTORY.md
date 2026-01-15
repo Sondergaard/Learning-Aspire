@@ -16,7 +16,7 @@ git push origin Aspire_v9
 ```
 
 Alternatively, the tag can be created through the GitHub UI:
-1. Go to https://github.com/Sondergaard/Learning-Aspire/releases
+1. Go to the repository's Releases page (usually at `https://github.com/<owner>/<repo>/releases`)
 2. Click "Create a new release"
 3. Enter "Aspire_v9" as the tag name
 4. Select commit 238cb05e933d34500dcf2ace5775a6ec2d3816a0 as the target
