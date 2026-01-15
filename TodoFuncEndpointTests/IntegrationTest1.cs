@@ -5,7 +5,6 @@ namespace TodoFuncEndpointTests;
 
 public class IntegrationTest1(ITestOutputHelper outputHelper)
 {
-    private readonly ITestOutputHelper _outputHelper = outputHelper;
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
     [Fact]
