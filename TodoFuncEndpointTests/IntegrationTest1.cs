@@ -11,7 +11,7 @@ public class IntegrationTest1
     {
         // Arrange
         var cancellationToken = new CancellationTokenSource(DefaultTimeout).Token;
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.TodoFunc>(cancellationToken);
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>(cancellationToken);
         appHost.Services.AddLogging(logging =>
         {
             logging.SetMinimumLevel(LogLevel.Debug);
