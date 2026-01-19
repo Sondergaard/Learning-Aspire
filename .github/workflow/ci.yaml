@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, master, sondergaard/add-ci-pipeline ]
   pull_request:
-    branches: [ main, master, sondergaard/add-ci-pipeline ]
+    branches: [ main, master ]
 
 jobs:
   build-and-test:
