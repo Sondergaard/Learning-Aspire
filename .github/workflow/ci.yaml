@@ -1,8 +1,7 @@
 name: Build and Test
 
 on:
-  push:
-    branches: [ main, master, sondergaard/add-ci-pipeline ]
+  push:    
 
 jobs:
   build-and-test:
