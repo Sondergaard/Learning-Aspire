@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TodoFunc\TodoFunc.csproj" />
+    <ProjectReference Include="..\TodoFunc.Migrator\TodoFunc.Migrator.csproj" />
   </ItemGroup>
 
 </Project>

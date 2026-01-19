@@ -19,6 +19,7 @@ This project showcases a Todo management system built with:
 - **AspireAppHost** - Application orchestration and resource management
 - **AspireServiceDefaults** - Shared service defaults (health checks, telemetry, service discovery)
 - **TodoFunc** - Azure Functions app with HTTP triggers and Service Bus integration
+- **TodoFunc.Migrator** - Database migration console app (runs on startup with elevated privileges)
 - **TodoFuncEndpointTests** - Integration tests for the Azure Functions
 
 ### Components
@@ -33,6 +34,9 @@ This project showcases a Todo management system built with:
          │
          ├─── Azure Service Bus (emulator)
          │    └─── ToDoCreated Queue
+         │
+         ├─── TodoFunc.Migrator (runs first)
+         │    └─── Applies schema migrations
          │
          └─── Azure Functions (TodoFunc)
               ├─── HTTP: Create Todo
@@ -58,9 +62,13 @@ This project showcases a Todo management system built with:
 
 ### Database Management
 
-- Automatic migration execution on startup
-- SQL Server running in a container with persistent lifetime
-- Simple schema with `Todos` table
+- **Separation of Concerns**: Database migrations run in a dedicated console app (`TodoFunc.Migrator`)
+- **Security Best Practice**: Main application only needs CRUD privileges, not DDL rights
+- **Migration Tracking**: Uses `__MigrationHistory` table to track applied migrations
+- **Idempotent Execution**: Safe to run multiple times without duplicate changes
+- **Ordered Migrations**: Applied alphabetically by filename (e.g., `001_CreateTodos.sql`, `002_SeedTestData.sql`)
+- **Transaction Safety**: Each migration runs in a transaction with automatic rollback on failure
+- **Automatic Execution**: Migrator runs before TodoFunc starts via Aspire orchestration
 
 ## 🛠️ Prerequisites
 
@@ -146,14 +154,19 @@ learning-aspire/
 ├── AspireServiceDefaults/   # Shared defaults
 │   └── Extensions.cs       # OpenTelemetry, health checks
 ├── TodoFunc/               # Azure Functions project
-│   ├── Migrations/         # SQL migration scripts
 │   ├── Todos/
 │   │   ├── Create/        # Create todo endpoint
 │   │   └── List/          # List todos endpoint
 │   ├── Stats/
 │   │   └── OnToDoCreated.cs # Service Bus trigger
-│   ├── MigrationRunner.cs
 │   └── Program.cs
+├── TodoFunc.Migrator/      # Database migration console app
+│   ├── Migrations/         # SQL migration scripts
+│   │   ├── 001_CreateTodos.sql
+│   │   └── 002_SeedTestData.sql
+│   ├── MigrationRunner.cs  # Migration execution logic
+│   ├── Program.cs
+│   └── README.md          # Migration documentation
 └── TodoFuncEndpointTests/  # Integration tests
 ```
 
@@ -192,8 +205,39 @@ This project demonstrates:
 2. **Service Integration** - Connecting Azure Functions with databases and messaging
 3. **Observability** - Implementing OpenTelemetry for monitoring
 4. **Testing** - Writing integration tests for distributed systems
-5. **Migrations** - Database schema management
+5. **Database Migrations** - Separate migrator project following security best practices
 6. **Event-Driven Architecture** - Using Service Bus for async communication
+7. **Security** - Principle of least privilege (app runs with CRUD-only permissions)
+
+## 🔒 Security Architecture
+
+### Separation of Database Privileges
+
+This project follows the **principle of least privilege** by separating database operations:
+
+- **TodoFunc.Migrator**: Runs with DDL privileges (CREATE, ALTER, DROP) to manage schema
+  - Executes during deployment/startup
+  - Exits after migrations complete
+  
+- **TodoFunc**: Runs with minimal privileges (SELECT, INSERT, UPDATE, DELETE only)
+  - No schema modification capabilities
+  - Reduced attack surface
+  - Safer for production environments
+
+### Adding New Migrations
+
+See the [TodoFunc.Migrator README](TodoFunc.Migrator/README.md) for detailed instructions.
+
+Quick example:
+```sql
+-- 003_AddNewColumn.sql
+IF NOT EXISTS (SELECT * FROM sys.columns 
+               WHERE object_id = OBJECT_ID(N'dbo.Todos') 
+               AND name = 'Priority')
+BEGIN
+    ALTER TABLE dbo.Todos ADD Priority INT NOT NULL DEFAULT 0;
+END
+```
 
 ## 📚 Resources
 

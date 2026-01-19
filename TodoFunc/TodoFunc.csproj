@@ -24,10 +24,4 @@
     <ProjectReference Include="..\AspireServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Migrations\001_CreateTodos.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
