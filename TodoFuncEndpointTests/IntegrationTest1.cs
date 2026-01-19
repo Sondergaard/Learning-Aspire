@@ -36,7 +36,7 @@ public class IntegrationTest1
             .WaitAsync(DefaultTimeout, cancellationToken);
         
         
-        var response = await httpClient.GetAsync("/", cancellationToken);
+        var response = await httpClient.GetAsync("/api/health", cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
