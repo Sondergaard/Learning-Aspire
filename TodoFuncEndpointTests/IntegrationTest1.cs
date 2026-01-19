@@ -19,7 +19,11 @@ public class IntegrationTest1
         // Act
         // The app has already waited for the health check to pass before StartAsync completes
         var httpClient = app.CreateHttpClient(AppHosts.ToDoFunction);
-        var response = await httpClient.GetAsync("/api/health", cancellationToken);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync(AppHosts.ToDoFunction, cancellationToken)
+            .WaitAsync(DefaultTimeout, cancellationToken);
+        
+        
+        var response = await httpClient.GetAsync("/", cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

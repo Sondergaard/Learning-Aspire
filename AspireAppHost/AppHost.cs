@@ -26,7 +26,7 @@ builder
     .AddAzureFunctionsProject<Projects.TodoFunc>(AppHosts.ToDoFunction)
     .WithReference(db)
     .WithReference(serviceBus)
-    .WithHealthCheck("/api/health") // Wait for health endpoint to be ready
+    .WithHttpHealthCheck("/api/health") // Wait for health endpoint to be ready
     .WaitFor(migrator) // Wait for migrations to complete
     .WaitFor(serviceBus);
 
