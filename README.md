@@ -6,8 +6,8 @@ A sample .NET Aspire project demonstrating cloud-native application orchestratio
 
 This project showcases a Todo management system built with:
 
-- **.NET Aspire** for cloud-native orchestration
-- **Azure Functions** (.NET 9.0) for serverless HTTP endpoints
+- **.NET Aspire 13.1** for cloud-native orchestration
+- **Azure Functions** (.NET 10.0) for serverless HTTP endpoints
 - **SQL Server** for data persistence
 - **Azure Service Bus** for async messaging
 - **OpenTelemetry** for observability
@@ -77,7 +77,7 @@ This project showcases a Todo management system built with:
 
 ## 🛠️ Prerequisites
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [Azure Functions Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local)
 
