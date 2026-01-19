@@ -48,6 +48,10 @@ This project showcases a Todo management system built with:
 
 ### HTTP Endpoints
 
+- **GET /api/health** - Health check endpoint
+  - Returns HTTP 200 OK when the function app is ready
+  - Used by integration tests and monitoring systems
+  
 - **POST /api/Create** - Create a new todo item
   - Stores the todo in SQL Server
   - Publishes a `ToDoCreated` event to Service Bus
@@ -62,9 +66,10 @@ This project showcases a Todo management system built with:
 
 ### Database Management
 
+- **DbUp Integration**: Uses industry-standard DbUp library for database migrations
 - **Separation of Concerns**: Database migrations run in a dedicated console app (`TodoFunc.Migrator`)
 - **Security Best Practice**: Main application only needs CRUD privileges, not DDL rights
-- **Migration Tracking**: Uses `__MigrationHistory` table to track applied migrations
+- **Migration Tracking**: DbUp uses `SchemaVersions` table to track applied migrations
 - **Idempotent Execution**: Safe to run multiple times without duplicate changes
 - **Ordered Migrations**: Applied alphabetically by filename (e.g., `001_CreateTodos.sql`, `002_SeedTestData.sql`)
 - **Transaction Safety**: Each migration runs in a transaction with automatic rollback on failure
