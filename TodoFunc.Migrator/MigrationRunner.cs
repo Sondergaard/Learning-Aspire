@@ -1,4 +1,4 @@
-using Microsoft.Data.SqlClient;
+using DbUp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -19,103 +19,71 @@ public class MigrationRunner
 
     public async Task RunMigrationsAsync()
     {
-        _logger.LogInformation("Starting database migrations...");
+        _logger.LogInformation("Starting database migrations with DbUp...");
 
-        await EnsureMigrationTableExistsAsync();
+        // Ensure database exists
+        EnsureDatabase.For.SqlDatabase(_connectionString);
 
-        var migrationsPath = Path.Combine(AppContext.BaseDirectory, "Migrations");
-        if (!Directory.Exists(migrationsPath))
+        // Configure DbUp to run migrations from the Migrations folder
+        var upgrader = DeployChanges.To
+            .SqlDatabase(_connectionString)
+            .WithScriptsEmbeddedInAssembly(typeof(MigrationRunner).Assembly)
+            .LogTo(new DbUpLogger(_logger))
+            .Build();
+
+        var result = upgrader.PerformUpgrade();
+
+        if (!result.Successful)
         {
-            _logger.LogWarning("Migrations directory not found at {Path}", migrationsPath);
-            return;
+            _logger.LogError(result.Error, "Database migration failed!");
+            throw result.Error;
         }
 
-        var migrationFiles = Directory.GetFiles(migrationsPath, "*.sql")
-            .OrderBy(f => f)
-            .ToList();
-
-        if (migrationFiles.Count == 0)
-        {
-            _logger.LogInformation("No migration files found.");
-            return;
-        }
-
-        foreach (var file in migrationFiles)
-        {
-            var migrationName = Path.GetFileName(file);
-            
-            if (await IsMigrationAppliedAsync(migrationName))
-            {
-                _logger.LogInformation("Migration {Migration} already applied, skipping.", migrationName);
-                continue;
-            }
-
-            _logger.LogInformation("Applying migration: {Migration}", migrationName);
-            
-            var script = await File.ReadAllTextAsync(file);
-            await using var conn = new SqlConnection(_connectionString);
-            await conn.OpenAsync();
-            
-            await using var transaction = await conn.BeginTransactionAsync();
-            try
-            {
-                await using var cmd = new SqlCommand(script, conn, (SqlTransaction)transaction);
-                cmd.CommandTimeout = 300; // 5 minutes
-                await cmd.ExecuteNonQueryAsync();
-
-                await RecordMigrationAsync(conn, (SqlTransaction)transaction, migrationName);
-                await transaction.CommitAsync();
-                
-                _logger.LogInformation("Migration {Migration} applied successfully.", migrationName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to apply migration {Migration}", migrationName);
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        _logger.LogInformation("All migrations completed successfully.");
-    }
-
-    private async Task EnsureMigrationTableExistsAsync()
-    {
-        const string createTableSql = @"
-            IF OBJECT_ID(N'dbo.__MigrationHistory', N'U') IS NULL
-            BEGIN
-                CREATE TABLE dbo.__MigrationHistory (
-                    MigrationName NVARCHAR(255) PRIMARY KEY,
-                    AppliedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()
-                );
-            END";
-
-        await using var conn = new SqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new SqlCommand(createTableSql, conn);
-        await cmd.ExecuteNonQueryAsync();
-    }
-
-    private async Task<bool> IsMigrationAppliedAsync(string migrationName)
-    {
-        const string checkSql = "SELECT COUNT(1) FROM dbo.__MigrationHistory WHERE MigrationName = @MigrationName";
-
-        await using var conn = new SqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new SqlCommand(checkSql, conn);
-        cmd.Parameters.AddWithValue("@MigrationName", migrationName);
+        _logger.LogInformation("Database migrations completed successfully.");
         
-        var count = (int)(await cmd.ExecuteScalarAsync() ?? 0);
-        return count > 0;
+        // Return completed task for async compatibility
+        await Task.CompletedTask;
     }
 
-    private async Task RecordMigrationAsync(SqlConnection conn, SqlTransaction transaction, string migrationName)
+    // Custom logger adapter to integrate DbUp with ILogger
+    private class DbUpLogger : DbUp.Engine.Output.IUpgradeLog
     {
-        const string insertSql = "INSERT INTO dbo.__MigrationHistory (MigrationName) VALUES (@MigrationName)";
+        private readonly ILogger _logger;
 
-        await using var cmd = new SqlCommand(insertSql, conn, transaction);
-        cmd.Parameters.AddWithValue("@MigrationName", migrationName);
-        await cmd.ExecuteNonQueryAsync();
+        public DbUpLogger(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public void LogDebug(string format, params object[] args)
+        {
+            _logger.LogDebug(format, args);
+        }
+
+        public void LogInformation(string format, params object[] args)
+        {
+            _logger.LogInformation(format, args);
+        }
+
+        public void LogWarning(string format, params object[] args)
+        {
+            _logger.LogWarning(format, args);
+        }
+
+        public void LogError(string format, params object[] args)
+        {
+            _logger.LogError(format, args);
+        }
+
+        public void LogError(Exception ex, string format, params object[] args)
+        {
+            _logger.LogError(ex, format, args);
+        }
+
+        public void LogTrace(string format, params object[] args)
+        {
+            _logger.LogTrace(format, args);
+        }
     }
 }
 
