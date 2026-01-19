@@ -26,6 +26,7 @@ builder
     .AddAzureFunctionsProject<Projects.TodoFunc>(AppHosts.ToDoFunction)
     .WithReference(db)
     .WithReference(serviceBus)
+    .WithHttpHealthCheck("/api/health") // Azure Functions adds /api prefix by default
     .WaitFor(migrator) // Wait for migrations to complete
     .WaitFor(serviceBus);
 
