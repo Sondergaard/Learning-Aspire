@@ -15,6 +15,6 @@ namespace TodoFunc.Todos.Create;
 
 public class CreateToDo
 {
-    public string Title { get; set; }
+    public required string Title { get; set; }
     public bool IsCompleted { get; set; }
 }

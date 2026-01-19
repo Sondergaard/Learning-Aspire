@@ -1,9 +1,8 @@
 using AppHost;
 using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
 namespace TodoFuncEndpointTests;
 
-public class IntegrationTest1(ITestOutputHelper outputHelper)
+public class IntegrationTest1
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
@@ -12,7 +11,7 @@ public class IntegrationTest1(ITestOutputHelper outputHelper)
     {
         // Arrange
         var cancellationToken = new CancellationTokenSource(DefaultTimeout).Token;
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.TodoFunc>(cancellationToken);
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>(cancellationToken);
         appHost.Services.AddLogging(logging =>
         {
             logging.SetMinimumLevel(LogLevel.Debug);

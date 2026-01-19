@@ -15,12 +15,19 @@ var sql = builder.AddSqlServer("sqlserver")
 
 var db = sql.AddDatabase("ToDoDatabase");
 
+// Add Database Migrator - runs once at startup
+var migrator = builder
+    .AddProject<Projects.TodoFunc_Migrator>("todofunc-migrator")
+    .WithReference(db)
+    .WaitFor(db);
+
 // Wire up Azure Function with SQL Server connection
 builder
     .AddAzureFunctionsProject<Projects.TodoFunc>(AppHosts.ToDoFunction)
     .WithReference(db)
     .WithReference(serviceBus)
-    .WaitFor(db)
+    .WaitFor(migrator) // Wait for migrations to complete
     .WaitFor(serviceBus);
 
 builder.Build().Run();
+

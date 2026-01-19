@@ -31,7 +31,7 @@ public class Trigger
         using var cmd = new SqlCommand("INSERT INTO Todos (Title, IsCompleted) OUTPUT INSERTED.Id VALUES (@title, @isCompleted);", conn);
         cmd.Parameters.AddWithValue("@title", command.Title);
         cmd.Parameters.AddWithValue("@isCompleted", command.IsCompleted);
-        var id = (int)await cmd.ExecuteScalarAsync();
+        var id = (int)(await cmd.ExecuteScalarAsync() ?? 0);
 
         var result = new ToDoCreated
         {
