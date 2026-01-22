@@ -6,6 +6,9 @@ using Microsoft.Extensions.Hosting;
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.AddAzureAppConfiguration("config");
+
 builder.ConfigureFunctionsWebApplication();
 
 builder.Services.AddAzureClients(azure =>

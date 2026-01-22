@@ -15,11 +15,18 @@
     <PackageReference Include="Aspire.Hosting.Azure.Functions" Version="13.1.0" />
     <PackageReference Include="Aspire.Hosting.Azure.ServiceBus" Version="13.1.0" />
     <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.AppConfiguration" Version="13.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TodoFunc\TodoFunc.csproj" />
     <ProjectReference Include="..\TodoFunc.Migrator\TodoFunc.Migrator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AzureAppConfiguration\kv.ndjson">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

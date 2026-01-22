@@ -1,6 +1,14 @@
 using AppHost;
 var builder = DistributedApplication.CreateBuilder(args);
 
+var appConfiguration = builder.AddAzureAppConfiguration("config")
+    .RunAsEmulator(options =>
+    {
+        options.WithImageTag("1.0.2");
+        options.WithBindMount("AzureAppConfiguration", "/app/.aace");
+    });
+
+
 var serviceBus = builder
     .AddAzureServiceBus("myservicebus")
     .RunAsEmulator(container =>
@@ -26,9 +34,11 @@ builder
     .AddAzureFunctionsProject<Projects.TodoFunc>(AppHosts.ToDoFunction)
     .WithReference(db)
     .WithReference(serviceBus)
+    .WithReference(appConfiguration)
     .WithHttpHealthCheck("/api/health") // Azure Functions adds /api prefix by default
     .WaitFor(migrator) // Wait for migrations to complete
-    .WaitFor(serviceBus);
+    .WaitFor(serviceBus)
+    .WaitFor(appConfiguration);
 
 builder.Build().Run();
 
